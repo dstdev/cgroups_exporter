@@ -22,3 +22,16 @@ func (c memory) GetUsageInBytes() (int, error) {
 	}
 	return usage, nil
 }
+
+func (c memory) GetLimitInBytes() (int, error) {
+	data, err := readFile(string(c), "memory.limit_in_bytes")
+	if err != nil {
+		return 0, err
+	}
+	usage, err := strconv.Atoi(strings.TrimSpace(data))
+	if err != nil {
+		log.Errorf("unable to convert memory limit to integer: %v", err)
+		return usage, err
+	}
+	return usage, nil
+}
