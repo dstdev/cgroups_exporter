@@ -1,0 +1,9 @@
+[Unit]
+Description=Cgroups Exporter
+
+[Service]
+EnvironmentFile=/etc/sysconfig/cgroups_exporter
+ExecStart=/usr/local/sbin/cgroups_exporter $OPTIONS
+
+[Install]
+WantedBy=multi-user.target
