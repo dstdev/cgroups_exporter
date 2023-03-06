@@ -105,7 +105,8 @@ func (collector *cgroupsSlurmCollector) Collect(ch chan<- prometheus.Metric) {
 				ch <- prometheus.MustNewConstMetric(collector.memoryUsageInBytesMetric,
 					prometheus.GaugeValue, float64(memoryUsageBytes), user_id, job_id, step_id, task_id)
 				// memoryLimitInBytesMetric
-				memoryLimitBytes, err := cgroups.Memory.GetLimitInBytes()
+				const slurm = true
+				memoryLimitBytes, err := cgroups.Memory.GetLimitInBytes(slurm)
 				if err != nil {
 					log.Fatalf("unable to read memory limit in bytes: %v", err)
 				}
