@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strconv"
 	"os/user"
+	"time"
+	//"strconv"
 
 	ps "github.com/mitchellh/go-ps"
 	cg "github.com/phpHavok/cgroups_exporter/cgroups"
@@ -23,19 +25,19 @@ func NewCgroupsSlurmCollector(cgroupsRootPath string) *cgroupsSlurmCollector {
 	return &cgroupsSlurmCollector{
 		cpuacctUsagePerCPUMetric: prometheus.NewDesc("cgroups_slurm_cpuacct_usage_per_cpu_ns",
 			"Per-nanosecond usage of each CPU in a cgroup",
-			[]string{"user_id", "user_name", "job_id", "step_id", "task_id", "cpu_id"}, nil,
+			[]string{"user_id", "user_name", "time_stamp", "job_id", "step_id", "task_id", "cpu_id"}, nil,
 		),
 		memoryUsageInBytesMetric: prometheus.NewDesc("cgroups_slurm_memory_usage_in_bytes",
 			"Current memory used by the cgroup in bytes",
-			[]string{"user_id", "user_name", "job_id", "step_id", "task_id"}, nil,
+			[]string{"user_id", "user_name", "time_stamp", "job_id", "step_id", "task_id"}, nil,
 		),
 		memoryLimitInBytesMetric: prometheus.NewDesc("cgroups_slurm_memory_limit_in_bytes",
 			"Memory limit set by the cgroup in bytes",
-			[]string{"user_id", "user_name", "job_id", "step_id", "task_id"}, nil,
+			[]string{"user_id", "user_name", "time_stamp", "job_id", "step_id", "task_id"}, nil,
 		),
 		cpusetCPUsMetric: prometheus.NewDesc("cgroups_slurm_cpuset_cpus",
 			"List of CPUs and whether or not they are in the cpuset cgroup",
-			[]string{"user_id", "user_name", "job_id", "step_id", "task_id", "cpu_id"}, nil,
+			[]string{"user_id", "user_name", "time_stamp", "job_id", "step_id", "task_id", "cpu_id"}, nil,
 		),
 		cgroupsRootPath: cgroupsRootPath,
 	}
@@ -102,7 +104,7 @@ func (collector *cgroupsSlurmCollector) Collect(ch chan<- prometheus.Metric) {
 				}
 				for cpuID, cpuUsage := range usagePerCPU {
 					ch <- prometheus.MustNewConstMetric(collector.cpuacctUsagePerCPUMetric,
-						prometheus.GaugeValue, float64(cpuUsage), user_id, u.Username, job_id, step_id, task_id, strconv.Itoa(cpuID))
+						prometheus.GaugeValue, float64(cpuUsage), user_id, u.Username, strconv.FormatInt(time.Now().UnixNano(), 18), job_id, step_id, task_id, strconv.Itoa(cpuID))
 				}
 				// memoryUsageInBytesMetric
 				memoryUsageBytes, err := cgroups.Memory.GetUsageInBytes()
@@ -110,7 +112,7 @@ func (collector *cgroupsSlurmCollector) Collect(ch chan<- prometheus.Metric) {
 					log.Fatalf("unable to read memory usage in bytes: %v", err)
 				}
 				ch <- prometheus.MustNewConstMetric(collector.memoryUsageInBytesMetric,
-					prometheus.GaugeValue, float64(memoryUsageBytes), user_id, u.Username, job_id, step_id, task_id)
+					prometheus.GaugeValue, float64(memoryUsageBytes), user_id, u.Username, strconv.FormatInt(time.Now().UnixNano(), 18), job_id, step_id, task_id)
 				// memoryLimitInBytesMetric
 				const slurm = true
 				memoryLimitBytes, err := cgroups.Memory.GetLimitInBytes(slurm)
@@ -118,7 +120,7 @@ func (collector *cgroupsSlurmCollector) Collect(ch chan<- prometheus.Metric) {
 					log.Fatalf("unable to read memory limit in bytes: %v", err)
 				}
 				ch <- prometheus.MustNewConstMetric(collector.memoryLimitInBytesMetric,
-					prometheus.GaugeValue, float64(memoryLimitBytes), user_id, u.Username, job_id, step_id, task_id)
+					prometheus.GaugeValue, float64(memoryLimitBytes), user_id, u.Username, strconv.FormatInt(time.Now().UnixNano(), 18), job_id, step_id, task_id)
 				// cpusetCPUsMetric
 				cpusetCPUs, err := cgroups.Cpuset.GetCpus()
 				if err != nil {
@@ -126,7 +128,7 @@ func (collector *cgroupsSlurmCollector) Collect(ch chan<- prometheus.Metric) {
 				}
 				for _, cpuID := range cpusetCPUs {
 					ch <- prometheus.MustNewConstMetric(collector.cpusetCPUsMetric,
-						prometheus.GaugeValue, float64(1), user_id, u.Username, job_id, step_id, task_id, strconv.Itoa(cpuID))
+						prometheus.GaugeValue, float64(1), user_id, u.Username, strconv.FormatInt(time.Now().UnixNano(), 18), job_id, step_id, task_id, strconv.Itoa(cpuID))
 				}
 			}
 		}
