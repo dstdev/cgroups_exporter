@@ -3,7 +3,7 @@ A Prometheus exporter for cgroup-level metrics.
 
 ## Compiling from Source
 
-This project is written primarily in Go and requires Go v1.16 or later to
+This project is written primarily in Go and requires Go v1.18 or later to
 compile.
 
 To build, you can just type `go build`, and Go will handle everything.
